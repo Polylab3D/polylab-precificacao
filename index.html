@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Polylab 3D — Precificação</title>
+  <title>Polylab 3D — Sistema de Gestão</title>
   <style>
     :root {
       --bg: #0f0f0f;
@@ -362,6 +362,73 @@
       border-top: 1px solid var(--border);
       margin-top: 40px;
     }
+
+    /* ==================== ORDERS ==================== */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-pending { background: rgba(254, 202, 87, 0.2); color: #feca57; }
+    .status-production { background: rgba(0, 210, 211, 0.2); color: #00d2d3; }
+    .status-completed { background: rgba(0, 184, 148, 0.2); color: #00b894; }
+    .status-delivered { background: rgba(136, 146, 176, 0.2); color: #8892b0; }
+
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover { border-color: var(--primary); color: var(--text); }
+    .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary-hover);
+      margin-bottom: 4px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
   </style>
 </head>
 <body>
@@ -370,7 +437,7 @@
 <div id="login-screen">
   <div class="login-box">
     <h1>Polylab 3D</h1>
-    <p>Calculadora de Precificação</p>
+    <p>Sistema de Gestão</p>
     <input type="password" id="login-pass" placeholder="Digite a senha" autofocus>
     <div class="login-error" id="login-error">Senha incorreta</div>
     <button class="btn" style="width:100%" onclick="tryLogin()">Entrar</button>
@@ -380,7 +447,7 @@
 <!-- ==================== APP ==================== -->
 <div id="app">
   <div class="header">
-    <h1>Polylab 3D — Precificação</h1>
+    <h1>Polylab 3D — Sistema</h1>
     <div class="header-actions">
       <button class="btn btn-sm btn-outline" onclick="exportData()">Exportar Dados</button>
       <button class="btn btn-sm btn-outline" onclick="importData()">Importar Dados</button>
@@ -391,6 +458,7 @@
   <div class="tabs">
     <div class="tab active" data-tab="base">Base de Cálculo</div>
     <div class="tab" data-tab="calc">Calcular Preço</div>
+    <div class="tab" data-tab="orders">Encomendas</div>
     <div class="tab" data-tab="history">Histórico</div>
   </div>
 
@@ -640,6 +708,119 @@
       </div>
     </div>
 
+    <!-- ==================== TAB: ENCOMENDAS ==================== -->
+    <div class="tab-content" id="tab-orders">
+
+      <!-- STATS DASHBOARD -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Total Encomendas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-pending" style="color:var(--warning)">0</div>
+          <div class="stat-label">Pendente</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-production" style="color:var(--success)">0</div>
+          <div class="stat-label">Em Produção</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-completed" style="color:var(--text-muted)">0</div>
+          <div class="stat-label">Concluído</div>
+        </div>
+      </div>
+
+      <!-- NOVA ENCOMENDA -->
+      <div class="card">
+        <div class="card-title">Nova Encomenda</div>
+        <div class="card-desc">Adicione uma nova encomenda ao sistema.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Cliente</label>
+            <input type="text" id="order_client" placeholder="Nome do cliente">
+          </div>
+          <div class="form-group">
+            <label>Origem</label>
+            <select id="order_origin">
+              <option value="Vinted">Vinted</option>
+              <option value="Etsy">Etsy</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Instagram">Instagram</option>
+              <option value="Presencial">Presencial</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Produto</label>
+            <input type="text" id="order_product" placeholder="Nome do produto">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="order_status">
+              <option value="Pendente">Pendente</option>
+              <option value="Em Produção">Em Produção</option>
+              <option value="Concluído">Concluído</option>
+              <option value="Entregue">Entregue</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Data Encomenda</label>
+            <input type="date" id="order_date">
+          </div>
+          <div class="form-group">
+            <label>Data Entrega Prevista</label>
+            <input type="date" id="order_delivery">
+          </div>
+          <div class="form-group">
+            <label>Preço (€)</label>
+            <input type="number" id="order_price" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Notas</label>
+            <input type="text" id="order_notes" placeholder="Observações">
+          </div>
+        </div>
+        <button class="btn btn-success" onclick="saveOrder()" style="margin-top:16px;">Adicionar Encomenda</button>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="card">
+        <div class="card-title">Filtrar Encomendas</div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px; color:var(--text-muted); margin-bottom:8px; display:block;">ORIGEM</label>
+          <div class="filter-chips" id="origin-filters">
+            <div class="chip active" data-origin="all" onclick="filterByOrigin('all')">Todas</div>
+            <div class="chip" data-origin="Vinted" onclick="filterByOrigin('Vinted')">Vinted</div>
+            <div class="chip" data-origin="Etsy" onclick="filterByOrigin('Etsy')">Etsy</div>
+            <div class="chip" data-origin="WhatsApp" onclick="filterByOrigin('WhatsApp')">WhatsApp</div>
+            <div class="chip" data-origin="Instagram" onclick="filterByOrigin('Instagram')">Instagram</div>
+            <div class="chip" data-origin="Presencial" onclick="filterByOrigin('Presencial')">Presencial</div>
+            <div class="chip" data-origin="Outro" onclick="filterByOrigin('Outro')">Outro</div>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:12px; color:var(--text-muted); margin-bottom:8px; display:block;">STATUS</label>
+          <div class="filter-chips" id="status-filters">
+            <div class="chip active" data-status="all" onclick="filterByStatus('all')">Todos</div>
+            <div class="chip" data-status="Pendente" onclick="filterByStatus('Pendente')">Pendente</div>
+            <div class="chip" data-status="Em Produção" onclick="filterByStatus('Em Produção')">Em Produção</div>
+            <div class="chip" data-status="Concluído" onclick="filterByStatus('Concluído')">Concluído</div>
+            <div class="chip" data-status="Entregue" onclick="filterByStatus('Entregue')">Entregue</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LISTA DE ENCOMENDAS -->
+      <div class="card">
+        <div class="card-title">Lista de Encomendas</div>
+        <div id="orders-container">
+          <div class="empty-state">Nenhuma encomenda registada.</div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
   <div class="footer-note">
@@ -690,6 +871,8 @@
     recalcBase();
     calcPiece();
     renderHistory();
+    renderOrders();
+    updateOrderStats();
   }
 
   if (sessionStorage.getItem('polylab_auth') === '1') showApp();
@@ -914,6 +1097,158 @@
     };
     reader.readAsText(file);
     event.target.value = '';
+  }
+
+  // ==================== ORDERS ====================
+  let currentOriginFilter = 'all';
+  let currentStatusFilter = 'all';
+
+  function getOrders() {
+    return JSON.parse(localStorage.getItem('polylab_orders') || '[]');
+  }
+
+  function saveOrder() {
+    const client = document.getElementById('order_client').value.trim();
+    const origin = document.getElementById('order_origin').value;
+    const product = document.getElementById('order_product').value.trim();
+    const status = document.getElementById('order_status').value;
+    const date = document.getElementById('order_date').value;
+    const delivery = document.getElementById('order_delivery').value;
+    const price = parseFloat(document.getElementById('order_price').value) || 0;
+    const notes = document.getElementById('order_notes').value.trim();
+
+    if (!client || !product) {
+      alert('Cliente e Produto são obrigatórios!');
+      return;
+    }
+
+    const order = {
+      id: Date.now(),
+      client,
+      origin,
+      product,
+      status,
+      date: date || new Date().toISOString().split('T')[0],
+      delivery,
+      price,
+      notes,
+      createdAt: new Date().toISOString()
+    };
+
+    const orders = getOrders();
+    orders.unshift(order);
+    localStorage.setItem('polylab_orders', JSON.stringify(orders));
+
+    document.getElementById('order_client').value = '';
+    document.getElementById('order_product').value = '';
+    document.getElementById('order_date').value = '';
+    document.getElementById('order_delivery').value = '';
+    document.getElementById('order_price').value = '';
+    document.getElementById('order_notes').value = '';
+
+    renderOrders();
+    updateOrderStats();
+    alert('Encomenda adicionada com sucesso!');
+  }
+
+  function deleteOrder(id) {
+    if (!confirm('Apagar esta encomenda?')) return;
+    const orders = getOrders().filter(o => o.id !== id);
+    localStorage.setItem('polylab_orders', JSON.stringify(orders));
+    renderOrders();
+    updateOrderStats();
+  }
+
+  function updateOrderStats() {
+    const orders = getOrders();
+    const total = orders.length;
+    const pending = orders.filter(o => o.status === 'Pendente').length;
+    const production = orders.filter(o => o.status === 'Em Produção').length;
+    const completed = orders.filter(o => o.status === 'Concluído').length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-production').textContent = production;
+    document.getElementById('stat-completed').textContent = completed;
+  }
+
+  function getStatusClass(status) {
+    const map = {
+      'Pendente': 'status-pending',
+      'Em Produção': 'status-production',
+      'Concluído': 'status-completed',
+      'Entregue': 'status-delivered'
+    };
+    return map[status] || 'status-pending';
+  }
+
+  function filterByOrigin(origin) {
+    currentOriginFilter = origin;
+    document.querySelectorAll('#origin-filters .chip').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.origin === origin);
+    });
+    renderOrders();
+  }
+
+  function filterByStatus(status) {
+    currentStatusFilter = status;
+    document.querySelectorAll('#status-filters .chip').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.status === status);
+    });
+    renderOrders();
+  }
+
+  function renderOrders() {
+    let orders = getOrders();
+
+    if (currentOriginFilter !== 'all') {
+      orders = orders.filter(o => o.origin === currentOriginFilter);
+    }
+    if (currentStatusFilter !== 'all') {
+      orders = orders.filter(o => o.status === currentStatusFilter);
+    }
+
+    const container = document.getElementById('orders-container');
+
+    if (!orders.length) {
+      container.innerHTML = '<div class="empty-state">Nenhuma encomenda encontrada.</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="overflow-x:auto;">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Produto</th>
+              <th>Origem</th>
+              <th>Status</th>
+              <th>Entrega</th>
+              <th>Preço</th>
+              <th>Notas</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${orders.map(o => `
+              <tr>
+                <td>${o.date}</td>
+                <td><strong>${o.client}</strong></td>
+                <td>${o.product}</td>
+                <td>${o.origin}</td>
+                <td><span class="status-badge ${getStatusClass(o.status)}">${o.status}</span></td>
+                <td>${o.delivery || '-'}</td>
+                <td style="color:var(--success)">${fmt(o.price)}</td>
+                <td style="font-size:11px; color:var(--text-muted)">${o.notes || '-'}</td>
+                <td><button class="delete-btn" onclick="deleteOrder(${o.id})" title="Apagar">✕</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
   }
 </script>
 
