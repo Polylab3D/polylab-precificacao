@@ -654,7 +654,7 @@
   // ==================== AUTH ====================
   // SHA-256 hash da senha — altere executando no console:
   // crypto.subtle.digest('SHA-256', new TextEncoder().encode('SUA_SENHA')).then(h => console.log(Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')))
-  const PASS_HASH = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8'; // "password"
+  const PASS_HASH = '55063de105a9020d151805e33be779ad816817d8dd950a15220e5ae000eadc97';
 
   async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
