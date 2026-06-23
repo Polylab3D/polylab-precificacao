@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polylab 3D — Precificação</title>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --primary: #e94560;
+      --primary-hover: #ff6b81;
+      --accent: #0f3460;
+      --text: #eaeaea;
+      --text-muted: #8892b0;
+      --success: #00d2d3;
+      --warning: #feca57;
+      --border: #2a2a4a;
+      --input-bg: #12122a;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ==================== LOGIN ==================== */
+    #login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--surface2) 50%, var(--bg) 100%);
+    }
+
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .login-box h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .login-box p {
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 16px;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .login-box input:focus { border-color: var(--primary); }
+
+    .login-error {
+      color: var(--primary);
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    /* ==================== BUTTONS ==================== */
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-sm { padding: 8px 16px; font-size: 13px; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+    .btn-outline:hover { background: var(--primary); color: #fff; }
+    .btn-success { background: #00b894; }
+    .btn-success:hover { background: #00d2d3; }
+
+    /* ==================== APP LAYOUT ==================== */
+    #app { display: none; }
+
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 14px 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ==================== CARDS & SECTIONS ==================== */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--primary-hover);
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px 14px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+
+    .computed-value {
+      padding: 10px 14px;
+      background: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    /* ==================== PRECIFICAÇÃO TABLE ==================== */
+    .pricing-result {
+      background: linear-gradient(135deg, var(--surface), var(--surface2));
+      border: 1px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 20px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .result-item {
+      text-align: center;
+      padding: 16px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+    }
+
+    .result-item .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .result-item .value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .result-item .value.total {
+      color: var(--success);
+      font-size: 32px;
+    }
+
+    .result-item .value.cost { color: var(--warning); }
+    .result-item .value.margin { color: var(--primary-hover); }
+
+    /* ==================== RESPONSIVE ==================== */
+    @media (max-width: 768px) {
+      .header { padding: 12px 16px; }
+      .main { padding: 16px; }
+      .tabs { padding: 0 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .result-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ==================== SLIDER ==================== */
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .slider-group input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .slider-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .slider-value {
+      min-width: 60px;
+      text-align: right;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    /* ==================== HISTORY ==================== */
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    .history-table th, .history-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .history-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    .history-table tr:hover td { background: rgba(233,69,96,0.05); }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+    }
+
+    .delete-btn:hover { color: var(--primary-hover); }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+
+    .footer-note {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Polylab 3D</h1>
+    <p>Calculadora de Precificação</p>
+    <input type="password" id="login-pass" placeholder="Digite a senha" autofocus>
+    <div class="login-error" id="login-error">Senha incorreta</div>
+    <button class="btn" style="width:100%" onclick="tryLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div id="app">
+  <div class="header">
+    <h1>Polylab 3D — Precificação</h1>
+    <div class="header-actions">
+      <button class="btn btn-sm btn-outline" onclick="exportData()">Exportar Dados</button>
+      <button class="btn btn-sm btn-outline" onclick="importData()">Importar Dados</button>
+      <button class="btn btn-sm" onclick="logout()" style="background:#555">Sair</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="base">Base de Cálculo</div>
+    <div class="tab" data-tab="calc">Calcular Preço</div>
+    <div class="tab" data-tab="history">Histórico</div>
+  </div>
+
+  <div class="main">
+
+    <!-- ==================== TAB: BASE DE CÁLCULO ==================== -->
+    <div class="tab-content active" id="tab-base">
+
+      <!-- FILAMENTO -->
+      <div class="card">
+        <div class="card-title">Custo com Filamento</div>
+        <div class="card-desc">Preço pago pelo rolo de filamento utilizado.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Preço do Filamento (€)</label>
+            <input type="number" id="filament_price" step="0.01" value="17.00" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Peso do Rolo (g)</label>
+            <input type="number" id="filament_weight" step="1" value="1000" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Custo por Grama</label>
+            <div class="computed-value" id="cost_per_gram">€ 0.017</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ENERGIA -->
+      <div class="card">
+        <div class="card-title">Custo com Energia</div>
+        <div class="card-desc">A tarifa de energia é o valor cobrado por cada kWh consumido. Divida o valor total da fatura pelo consumo total em kWh para obter o custo real.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Valor Mensal de Energia (€)</label>
+            <input type="number" id="energy_monthly" step="0.01" value="80.00" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Consumo Mensal (kWh)</label>
+            <input type="number" id="energy_kwh" step="1" value="350" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Tarifa de Energia (€/kWh)</label>
+            <div class="computed-value" id="energy_rate">€ 0.23</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEPRECIAÇÃO IMPRESSORA -->
+      <div class="card">
+        <div class="card-title">Depreciação da Impressora</div>
+        <div class="card-desc">Nenhuma máquina dura para sempre. Ao embutir a depreciação, você cria um "caixa" para repor a impressora quando ela quebrar ou ficar obsoleta.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Preço da Impressora (€)</label>
+            <input type="number" id="printer_price" step="0.01" value="365.00" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Vida Útil (horas)</label>
+            <input type="number" id="printer_hours" step="1" value="10000" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Depreciação por Hora</label>
+            <div class="computed-value" id="printer_deprec">€ 0.04</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEPRECIAÇÃO BICO -->
+      <div class="card">
+        <div class="card-title">Depreciação do Bico</div>
+        <div class="card-desc">O bico sofre abrasão contínua e tem desgaste natural. Incluir esta depreciação garante a reposição sem sacrificar o lucro.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Preço do Bico (€)</label>
+            <input type="number" id="nozzle_price" step="0.01" value="13.00" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Vida Útil do Bico (horas)</label>
+            <input type="number" id="nozzle_hours" step="1" value="800" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Depreciação por Hora</label>
+            <div class="computed-value" id="nozzle_deprec">€ 0.02</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÃO DE OBRA -->
+      <div class="card">
+        <div class="card-title">Mão de Obra</div>
+        <div class="card-desc">Não confunda tempo de máquina com tempo humano. Cobre apenas o tempo ativo que dedicou ao processo (preparação, pós-processamento, atendimento).</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Salário Desejado Mensal (€)</label>
+            <input type="number" id="salary_monthly" step="0.01" value="920.00" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Horas de Trabalho/Mês</label>
+            <input type="number" id="work_hours" step="1" value="220" oninput="saveAndRecalc()">
+          </div>
+          <div class="form-group">
+            <label>Valor da Mão de Obra/Hora</label>
+            <div class="computed-value" id="labor_rate">€ 4.18</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMBALAGEM -->
+      <div class="card">
+        <div class="card-title">Embalagem</div>
+        <div class="card-desc">Inclua também custos com mimos e brindes para seus clientes.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Custo da Embalagem (€)</label>
+            <input type="number" id="packaging_cost" step="0.01" value="1.00" oninput="saveAndRecalc()">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAXA DE PERDAS -->
+      <div class="card">
+        <div class="card-title">Taxa de Perdas</div>
+        <div class="card-desc">Impressão 3D não é ciência exata — energia acaba, bico entope, peça descola. Adicione um percentual para cobrir estas perdas.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Taxa de Perdas</label>
+            <div class="slider-group">
+              <input type="range" id="loss_rate" min="0" max="25" step="1" value="7" oninput="saveAndRecalc()">
+              <span class="slider-value" id="loss_rate_display">7%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARGEM DE LUCRO -->
+      <div class="card">
+        <div class="card-title">Margem de Lucro</div>
+        <div class="card-desc">Percentual de lucro desejado sobre o custo total da peça.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Margem de Lucro</label>
+            <div class="slider-group">
+              <input type="range" id="profit_margin" min="0" max="200" step="5" value="50" oninput="saveAndRecalc()">
+              <span class="slider-value" id="profit_margin_display">50%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-success" onclick="document.querySelector('[data-tab=calc]').click()" style="width:100%; margin-top:8px;">
+        Calcular Preço de uma Peça →
+      </button>
+    </div>
+
+    <!-- ==================== TAB: CALCULAR PREÇO ==================== -->
+    <div class="tab-content" id="tab-calc">
+      <div class="card">
+        <div class="card-title">Dados da Peça</div>
+        <div class="card-desc">Insira os dados da peça que deseja precificar.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nome da Peça</label>
+            <input type="text" id="piece_name" placeholder="Ex: Vaso espiral">
+          </div>
+          <div class="form-group">
+            <label>Peso do Filamento Usado (g)</label>
+            <input type="number" id="piece_weight" step="0.1" value="50" oninput="calcPiece()">
+          </div>
+          <div class="form-group">
+            <label>Tempo de Impressão (horas)</label>
+            <input type="number" id="piece_print_hours" step="0.1" value="3" oninput="calcPiece()">
+          </div>
+          <div class="form-group">
+            <label>Tempo de Mão de Obra (horas)</label>
+            <input type="number" id="piece_labor_hours" step="0.1" value="0.5" oninput="calcPiece()">
+          </div>
+          <div class="form-group">
+            <label>Potência da Impressora (W)</label>
+            <input type="number" id="printer_watts" step="1" value="350" oninput="calcPiece()">
+          </div>
+        </div>
+      </div>
+
+      <div class="pricing-result" id="pricing-result">
+        <div class="card-title" style="text-align:center; font-size:18px; margin-bottom:4px;">Resultado da Precificação</div>
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="label">Filamento</div>
+            <div class="value cost" id="r_filament">€ 0.00</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Energia</div>
+            <div class="value cost" id="r_energy">€ 0.00</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Deprec. Impressora</div>
+            <div class="value cost" id="r_printer">€ 0.00</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Deprec. Bico</div>
+            <div class="value cost" id="r_nozzle">€ 0.00</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Mão de Obra</div>
+            <div class="value cost" id="r_labor">€ 0.00</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Embalagem</div>
+            <div class="value cost" id="r_packaging">€ 0.00</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Subtotal (Custo)</div>
+            <div class="value cost" id="r_subtotal">€ 0.00</div>
+          </div>
+          <div class="result-item">
+            <div class="label">+ Perdas</div>
+            <div class="value cost" id="r_losses">€ 0.00</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Custo Total</div>
+            <div class="value cost" id="r_total_cost">€ 0.00</div>
+          </div>
+          <div class="result-item">
+            <div class="label">+ Lucro</div>
+            <div class="value margin" id="r_profit">€ 0.00</div>
+          </div>
+          <div class="result-item" style="grid-column: 1 / -1;">
+            <div class="label">Preço de Venda Sugerido</div>
+            <div class="value total" id="r_final_price">€ 0.00</div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:20px;">
+          <button class="btn btn-success" onclick="savePiece()">Salvar no Histórico</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB: HISTÓRICO ==================== -->
+    <div class="tab-content" id="tab-history">
+      <div class="card">
+        <div class="card-title">Histórico de Peças</div>
+        <div class="card-desc">Todas as peças calculadas e salvas.</div>
+        <div id="history-container">
+          <div class="empty-state">Nenhuma peça salva ainda.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">
+    Polylab 3D &copy; 2025 — @polylab.pt | Todos os dados ficam salvos localmente no seu navegador.
+  </div>
+</div>
+
+<!-- ==================== IMPORT FILE INPUT ==================== -->
+<input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+  // ==================== AUTH ====================
+  // SHA-256 hash da senha — altere executando no console:
+  // crypto.subtle.digest('SHA-256', new TextEncoder().encode('SUA_SENHA')).then(h => console.log(Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')))
+  const PASS_HASH = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8'; // "password"
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function tryLogin() {
+    const pass = document.getElementById('login-pass').value;
+    const hash = await sha256(pass);
+    if (hash === PASS_HASH) {
+      sessionStorage.setItem('polylab_auth', '1');
+      showApp();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('login-pass').value = '';
+      document.getElementById('login-pass').focus();
+    }
+  }
+
+  document.getElementById('login-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') tryLogin();
+  });
+
+  function logout() {
+    sessionStorage.removeItem('polylab_auth');
+    location.reload();
+  }
+
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadData();
+    recalcBase();
+    calcPiece();
+    renderHistory();
+  }
+
+  if (sessionStorage.getItem('polylab_auth') === '1') showApp();
+
+  // ==================== TABS ====================
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ==================== DATA ====================
+  const BASE_FIELDS = [
+    'filament_price', 'filament_weight', 'energy_monthly', 'energy_kwh',
+    'printer_price', 'printer_hours', 'nozzle_price', 'nozzle_hours',
+    'salary_monthly', 'work_hours', 'packaging_cost', 'loss_rate', 'profit_margin',
+    'printer_watts'
+  ];
+
+  function saveData() {
+    const data = {};
+    BASE_FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    localStorage.setItem('polylab_base', JSON.stringify(data));
+  }
+
+  function loadData() {
+    const saved = localStorage.getItem('polylab_base');
+    if (saved) {
+      const data = JSON.parse(saved);
+      BASE_FIELDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && data[id] !== undefined) el.value = data[id];
+      });
+    }
+  }
+
+  // ==================== CALCULATIONS ====================
+  function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+  function fmt(n) { return '€ ' + n.toFixed(2); }
+
+  function recalcBase() {
+    const costPerGram = getVal('filament_price') / getVal('filament_weight');
+    const energyRate = getVal('energy_monthly') / getVal('energy_kwh');
+    const printerDeprec = getVal('printer_price') / getVal('printer_hours');
+    const nozzleDeprec = getVal('nozzle_price') / getVal('nozzle_hours');
+    const laborRate = getVal('salary_monthly') / getVal('work_hours');
+
+    document.getElementById('cost_per_gram').textContent = fmt(isFinite(costPerGram) ? costPerGram : 0);
+    document.getElementById('energy_rate').textContent = fmt(isFinite(energyRate) ? energyRate : 0);
+    document.getElementById('printer_deprec').textContent = fmt(isFinite(printerDeprec) ? printerDeprec : 0);
+    document.getElementById('nozzle_deprec').textContent = fmt(isFinite(nozzleDeprec) ? nozzleDeprec : 0);
+    document.getElementById('labor_rate').textContent = fmt(isFinite(laborRate) ? laborRate : 0);
+    document.getElementById('loss_rate_display').textContent = getVal('loss_rate') + '%';
+    document.getElementById('profit_margin_display').textContent = getVal('profit_margin') + '%';
+  }
+
+  function calcPiece() {
+    const costPerGram = getVal('filament_price') / getVal('filament_weight');
+    const energyRate = getVal('energy_monthly') / getVal('energy_kwh');
+    const printerDeprec = getVal('printer_price') / getVal('printer_hours');
+    const nozzleDeprec = getVal('nozzle_price') / getVal('nozzle_hours');
+    const laborRate = getVal('salary_monthly') / getVal('work_hours');
+    const lossRate = getVal('loss_rate') / 100;
+    const profitMargin = getVal('profit_margin') / 100;
+
+    const weight = getVal('piece_weight');
+    const printHours = getVal('piece_print_hours');
+    const laborHours = getVal('piece_labor_hours');
+    const watts = getVal('printer_watts');
+
+    const filamentCost = weight * (isFinite(costPerGram) ? costPerGram : 0);
+    const energyCost = (watts / 1000) * printHours * (isFinite(energyRate) ? energyRate : 0);
+    const printerCost = printHours * (isFinite(printerDeprec) ? printerDeprec : 0);
+    const nozzleCost = printHours * (isFinite(nozzleDeprec) ? nozzleDeprec : 0);
+    const laborCost = laborHours * (isFinite(laborRate) ? laborRate : 0);
+    const packagingCost = getVal('packaging_cost');
+
+    const subtotal = filamentCost + energyCost + printerCost + nozzleCost + laborCost + packagingCost;
+    const losses = subtotal * lossRate;
+    const totalCost = subtotal + losses;
+    const profit = totalCost * profitMargin;
+    const finalPrice = totalCost + profit;
+
+    document.getElementById('r_filament').textContent = fmt(filamentCost);
+    document.getElementById('r_energy').textContent = fmt(energyCost);
+    document.getElementById('r_printer').textContent = fmt(printerCost);
+    document.getElementById('r_nozzle').textContent = fmt(nozzleCost);
+    document.getElementById('r_labor').textContent = fmt(laborCost);
+    document.getElementById('r_packaging').textContent = fmt(packagingCost);
+    document.getElementById('r_subtotal').textContent = fmt(subtotal);
+    document.getElementById('r_losses').textContent = fmt(losses);
+    document.getElementById('r_total_cost').textContent = fmt(totalCost);
+    document.getElementById('r_profit').textContent = fmt(profit);
+    document.getElementById('r_final_price').textContent = fmt(finalPrice);
+
+    return { filamentCost, energyCost, printerCost, nozzleCost, laborCost, packagingCost, subtotal, losses, totalCost, profit, finalPrice };
+  }
+
+  function saveAndRecalc() {
+    saveData();
+    recalcBase();
+    calcPiece();
+  }
+
+  // ==================== HISTORY ====================
+  function getHistory() {
+    return JSON.parse(localStorage.getItem('polylab_history') || '[]');
+  }
+
+  function savePiece() {
+    const name = document.getElementById('piece_name').value.trim() || 'Sem nome';
+    const result = calcPiece();
+    const entry = {
+      id: Date.now(),
+      name,
+      date: new Date().toLocaleDateString('pt-PT'),
+      weight: getVal('piece_weight'),
+      printHours: getVal('piece_print_hours'),
+      laborHours: getVal('piece_labor_hours'),
+      ...result
+    };
+    const history = getHistory();
+    history.unshift(entry);
+    localStorage.setItem('polylab_history', JSON.stringify(history));
+    renderHistory();
+    alert('Peça "' + name + '" salva no histórico!');
+  }
+
+  function deletePiece(id) {
+    if (!confirm('Apagar esta peça do histórico?')) return;
+    const history = getHistory().filter(h => h.id !== id);
+    localStorage.setItem('polylab_history', JSON.stringify(history));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const history = getHistory();
+    const container = document.getElementById('history-container');
+
+    if (!history.length) {
+      container.innerHTML = '<div class="empty-state">Nenhuma peça salva ainda.</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="overflow-x:auto;">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Nome</th>
+              <th>Peso (g)</th>
+              <th>Tempo Imp.</th>
+              <th>Custo</th>
+              <th>Preço Venda</th>
+              <th>Lucro</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${history.map(h => `
+              <tr>
+                <td>${h.date}</td>
+                <td><strong>${h.name}</strong></td>
+                <td>${h.weight}g</td>
+                <td>${h.printHours}h</td>
+                <td style="color:var(--warning)">${fmt(h.totalCost)}</td>
+                <td style="color:var(--success)">${fmt(h.finalPrice)}</td>
+                <td style="color:var(--primary-hover)">${fmt(h.profit)}</td>
+                <td><button class="delete-btn" onclick="deletePiece(${h.id})" title="Apagar">✕</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // ==================== EXPORT / IMPORT ====================
+  function exportData() {
+    const data = {
+      base: JSON.parse(localStorage.getItem('polylab_base') || '{}'),
+      history: getHistory(),
+      exportDate: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'polylab-precificacao-backup.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData() {
+    document.getElementById('import-file').click();
+  }
+
+  function handleImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.base) localStorage.setItem('polylab_base', JSON.stringify(data.base));
+        if (data.history) localStorage.setItem('polylab_history', JSON.stringify(data.history));
+        loadData();
+        recalcBase();
+        calcPiece();
+        renderHistory();
+        alert('Dados importados com sucesso!');
+      } catch (err) {
+        alert('Erro ao importar: arquivo inválido.');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+</script>
+
+</body>
+</html>
