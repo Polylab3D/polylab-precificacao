@@ -429,6 +429,48 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+
+    /* ==================== CAIXA DA EMPRESA ==================== */
+    .caixa-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 4px;
+    }
+
+    .caixa-item {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 20px 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .caixa-item .caixa-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .caixa-item .caixa-value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .caixa-faturado { color: var(--success); }
+    .caixa-custo { color: var(--warning); }
+    .caixa-lucro { color: var(--primary-hover); }
+    .caixa-qtd { color: var(--text); }
+
+    /* ==================== TOTAIS HISTÓRICO ==================== */
+    .history-total-row td {
+      background: rgba(233,69,96,0.08) !important;
+      font-weight: 700 !important;
+      border-top: 2px solid var(--primary) !important;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -732,6 +774,31 @@
         </div>
       </div>
 
+      <!-- CAIXA DA EMPRESA -->
+      <div class="card">
+        <div class="card-title">💰 Caixa da Empresa</div>
+        <div class="card-desc">Resumo financeiro de todas as encomendas registadas (apenas encomendas com preço definido).</div>
+        <div class="caixa-grid">
+          <div class="caixa-item">
+            <div class="caixa-label">Encomendas</div>
+            <div class="caixa-value caixa-qtd" id="caixa-qtd">0</div>
+          </div>
+          <div class="caixa-item">
+            <div class="caixa-label">Total Faturado</div>
+            <div class="caixa-value caixa-faturado" id="caixa-faturado">€ 0.00</div>
+          </div>
+          <div class="caixa-item">
+            <div class="caixa-label">Custo Estimado</div>
+            <div class="caixa-value caixa-custo" id="caixa-custo">€ 0.00</div>
+          </div>
+          <div class="caixa-item">
+            <div class="caixa-label">Lucro Estimado</div>
+            <div class="caixa-value caixa-lucro" id="caixa-lucro">€ 0.00</div>
+          </div>
+        </div>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:12px;">* Custo estimado calculado com base no custo mínimo definido (€14 por padrão). Ajusta em <strong>Base de Cálculo</strong>.</p>
+      </div>
+
       <!-- NOVA ENCOMENDA -->
       <div class="card">
         <div class="card-title">Nova Encomenda</div>
@@ -774,8 +841,12 @@
             <input type="date" id="order_delivery">
           </div>
           <div class="form-group">
-            <label>Preço (€)</label>
+            <label>Preço de Venda (€)</label>
             <input type="number" id="order_price" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Custo Real (€)</label>
+            <input type="number" id="order_cost" step="0.01" placeholder="0.00 (opcional)">
           </div>
           <div class="form-group">
             <label>Notas</label>
@@ -1024,6 +1095,10 @@
       return;
     }
 
+    const totalCusto = history.reduce((s, h) => s + (h.totalCost || 0), 0);
+    const totalPreco = history.reduce((s, h) => s + (h.finalPrice || 0), 0);
+    const totalLucro = history.reduce((s, h) => s + (h.profit || 0), 0);
+
     container.innerHTML = `
       <div style="overflow-x:auto;">
         <table class="history-table">
@@ -1053,6 +1128,15 @@
               </tr>
             `).join('')}
           </tbody>
+          <tfoot>
+            <tr class="history-total-row">
+              <td colspan="4"><strong>TOTAL (${history.length} peças)</strong></td>
+              <td style="color:var(--warning)"><strong>${fmt(totalCusto)}</strong></td>
+              <td style="color:var(--success)"><strong>${fmt(totalPreco)}</strong></td>
+              <td style="color:var(--primary-hover)"><strong>${fmt(totalLucro)}</strong></td>
+              <td></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     `;
@@ -1116,6 +1200,7 @@
     const date = document.getElementById('order_date').value;
     const delivery = document.getElementById('order_delivery').value;
     const price = parseFloat(document.getElementById('order_price').value) || 0;
+    const cost = parseFloat(document.getElementById('order_cost').value) || 0;
     const notes = document.getElementById('order_notes').value.trim();
 
     if (!client || !product) {
@@ -1132,6 +1217,7 @@
       date: date || new Date().toISOString().split('T')[0],
       delivery,
       price,
+      cost,
       notes,
       createdAt: new Date().toISOString()
     };
@@ -1145,6 +1231,7 @@
     document.getElementById('order_date').value = '';
     document.getElementById('order_delivery').value = '';
     document.getElementById('order_price').value = '';
+    document.getElementById('order_cost').value = '';
     document.getElementById('order_notes').value = '';
 
     renderOrders();
@@ -1171,6 +1258,18 @@
     document.getElementById('stat-pending').textContent = pending;
     document.getElementById('stat-production').textContent = production;
     document.getElementById('stat-completed').textContent = completed;
+
+    // Caixa da empresa — soma de todas as encomendas com preço
+    const withPrice = orders.filter(o => o.price > 0);
+    const totalFaturado = withPrice.reduce((s, o) => s + o.price, 0);
+    const totalCusto = withPrice.reduce((s, o) => s + (o.cost > 0 ? o.cost : 14), 0);
+    const totalLucro = totalFaturado - totalCusto;
+
+    document.getElementById('caixa-qtd').textContent = withPrice.length;
+    document.getElementById('caixa-faturado').textContent = fmt(totalFaturado);
+    document.getElementById('caixa-custo').textContent = fmt(totalCusto);
+    document.getElementById('caixa-lucro').textContent = fmt(totalLucro);
+    document.getElementById('caixa-lucro').style.color = totalLucro >= 0 ? 'var(--primary-hover)' : 'var(--primary)';
   }
 
   function getStatusClass(status) {
@@ -1216,6 +1315,10 @@
       return;
     }
 
+    const totalFaturado = orders.reduce((s, o) => s + (o.price || 0), 0);
+    const totalCusto = orders.reduce((s, o) => s + (o.cost > 0 ? o.cost : (o.price > 0 ? 14 : 0)), 0);
+    const totalLucro = totalFaturado - totalCusto;
+
     container.innerHTML = `
       <div style="overflow-x:auto;">
         <table class="history-table">
@@ -1228,12 +1331,17 @@
               <th>Status</th>
               <th>Entrega</th>
               <th>Preço</th>
+              <th>Custo</th>
+              <th>Lucro</th>
               <th>Notas</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            ${orders.map(o => `
+            ${orders.map(o => {
+              const custo = o.cost > 0 ? o.cost : (o.price > 0 ? 14 : 0);
+              const lucro = o.price - custo;
+              return `
               <tr>
                 <td>${o.date}</td>
                 <td><strong>${o.client}</strong></td>
@@ -1242,11 +1350,22 @@
                 <td><span class="status-badge ${getStatusClass(o.status)}">${o.status}</span></td>
                 <td>${o.delivery || '-'}</td>
                 <td style="color:var(--success)">${fmt(o.price)}</td>
+                <td style="color:var(--warning)">${o.cost > 0 ? fmt(o.cost) : '<span style="color:var(--text-muted);font-size:11px">~€14</span>'}</td>
+                <td style="color:${lucro >= 0 ? 'var(--primary-hover)' : 'var(--primary)'}">${fmt(lucro)}</td>
                 <td style="font-size:11px; color:var(--text-muted)">${o.notes || '-'}</td>
                 <td><button class="delete-btn" onclick="deleteOrder(${o.id})" title="Apagar">✕</button></td>
-              </tr>
-            `).join('')}
+              </tr>`;
+            }).join('')}
           </tbody>
+          <tfoot>
+            <tr class="history-total-row">
+              <td colspan="6"><strong>TOTAL (${orders.length} encomendas)</strong></td>
+              <td style="color:var(--success)"><strong>${fmt(totalFaturado)}</strong></td>
+              <td style="color:var(--warning)"><strong>${fmt(totalCusto)}</strong></td>
+              <td style="color:${totalLucro >= 0 ? 'var(--primary-hover)' : 'var(--primary)'}"><strong>${fmt(totalLucro)}</strong></td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     `;
